@@ -7,6 +7,10 @@
 check: 
 		gcc -Wall -Wextra -DFULLDEBUG -DDEBUG_INCLUDESRC -std=c9x -fsyntax-only -Werror debug.h 
 
+#(dump save flags)
+flags:  
+		@echo -ne '-DENABLEDEBUG -DDEBUG_INCLUDESRC' 
+
 test: debug.h
 		gcc -DENABLEDEBUG -DDEBUG_INCLUDESRC -DTEST_DEBUG -o testdebug -x c debug.h
 
