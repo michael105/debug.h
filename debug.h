@@ -1,10 +1,18 @@
 #if 0
 # /*
-# run make -f debug.h 
+# make -f debug.h [target]
+# targets below
 
 
 check: 
 		gcc -Wall -Wextra -DFULLDEBUG -DDEBUG_INCLUDESRC -std=c9x -fsyntax-only -Werror debug.h 
+
+test: debug.h
+		gcc -DENABLEDEBUG -DDEBUG_INCLUDESRC -DTEST_DEBUG -o testdebug -x c debug.h
+
+testfile: debug.h
+		gcc -DENABLEDEBUG -DDEBUG_INCLUDESRC -DTEST_DEBUG -DTEST_DEBUG_FILE -o testdebug -x c debug.h
+
 
 all: debug.h.txt html
 
@@ -28,7 +36,7 @@ define README =
  debug.h
 =========
  
-debugging functions
+debugging functions, colored, file logging
 
 
 SYNOPSIS
@@ -40,7 +48,7 @@ SYNOPSIS
 
  #define DEBUG_FILELEVEL [0..5]
 
- #define DEBUG_INCLUDESCR
+ #define DEBUG_INCLUDESRC
  
  #include "debug.h"
 
@@ -191,6 +199,50 @@ extern "C" {
 #define false 0
 #endif
 
+#if ( ENABLEDEBUG == NOCOLOR )
+#define AC_NORM
+#define AC_BLACK 
+#define AC_RED 
+#define AC_GREEN 
+#define AC_BROWN 
+#define AC_BLUE 
+#define AC_MAGENTA 
+#define AC_MARINE 
+#define AC_LGREY 
+#define AC_WHITE 
+
+#define AC_GREY 
+#define AC_LRED 
+#define AC_LGREEN
+#define AC_YELLOW 
+#define AC_LBLUE 
+#define AC_LMAGENTA 
+#define AC_LMARINE 
+#define AC_LWHITE 
+#else
+// ansicolor escape sequences
+#define AC_NORM "\033[0m"
+#define AC_BLACK "\033[0;30m"
+#define AC_RED "\033[0;31m"
+#define AC_GREEN "\033[32;0m"
+#define AC_BROWN "\033[0;33m"
+#define AC_BLUE "\033[0;34m"
+#define AC_MAGENTA "\033[0;35m"
+#define AC_MARINE "\033[0;36m"
+#define AC_LGREY "\033[0;37m"
+#define AC_WHITE "\033[0;38m"
+
+#define AC_GREY "\033[1;30m" 
+#define AC_LRED "\033[1;31m" 
+#define AC_LGREEN "\033[1;32m" 
+#define AC_YELLOW "\033[1;33m"
+#define AC_LBLUE "\033[1;34m"
+#define AC_LMAGENTA "\033[1;35m"
+#define AC_LMARINE "\033[1;36m"
+#define AC_LWHITE "\033[1;37m"
+#endif
+
+
 
 		// where the debug should go
 		enum _debugtarget { STDERR, STDOUT, TOFILE };
@@ -204,8 +256,8 @@ extern "C" {
 
 
 		// Error and warning severity
-		enum _severity { DEBUG, MINOR, UNUSUAL, WARNING, SEVERE, FATAL};
-		//enum _severity { FATAL, SEVERE, WARNING, UNUSUAL, MINOR, DEBUG };
+		//enum _severity { DEBUG, MINOR, UNUSUAL, WARNING, SEVERE, FATAL};
+		enum _severity { FATAL, SEVERE, WARNING, UNUSUAL, MINOR, DEBUG };
 #ifndef DBG_FILELEVEL
 		// local file debug level (everything by default );
 		static int dbg_filelevel = DEBUG;
@@ -221,7 +273,7 @@ extern "C" {
 
 #define warning(severity,...) _warning( severity, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
 #define warn(...) _warning( WARNING, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define warnif(when,...) {if ( when ) warning(__VA_ARGS__)}
+#define warnif(when,...) {if ( when ) warn(__VA_ARGS__);}
 
 #define error(...) _error( SEVERE, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
 #define fatal(...) _error( FATAL, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
@@ -230,41 +282,43 @@ extern "C" {
 
 
 #ifdef FULLDEBUG
-#ifndef DEBUG
-#define DEBUG
+#ifndef ENABLEDEBUG
+#define ENABLEDEBUG
 #endif
 #endif
 
-#ifdef DEBUG
+#ifdef ENABLEDEBUG
 
-#define dbgf(...) _dbg_full( 0, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbgf1(...) _dbg_full( 1, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbgf2(...) _dbg_full( 2, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbgf3(...) _dbg_full( 3, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbgf4(...) _dbg_full( 4, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbgf5(...) _dbg_full( 5, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
+#define _DBG_FULL_(level,...) _dbg_full( level,  dbg_filelevel,  __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
+
+#define dbgf(...)  _DBG_FULL_( 0,  __VA_ARGS__ )
+#define dbgf1(...) _DBG_FULL_( 1,  __VA_ARGS__ )
+#define dbgf2(...) _DBG_FULL_( 2,  __VA_ARGS__ )
+#define dbgf3(...) _DBG_FULL_( 3,  __VA_ARGS__ )
+#define dbgf4(...) _DBG_FULL_( 4,  __VA_ARGS__ )
+#define dbgf5(...) _DBG_FULL_( 5,  __VA_ARGS__ )
 
 #define dbgi(arg) _dbg(1, dbg_filelevel, "DBG: L.%d, %s, int %s:   %d", __LINE__, __FILE__, #arg , arg )
 
 #ifdef FULLDEBUG
-#define dbg(...) _dbg_full( 0, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
+#define dbg(...)  _DBG_FULL_( 0, __VA_ARGS__ )
+#define dbg1(...) _DBG_FULL_( 1, __VA_ARGS__ )
+#define dbg2(...) _DBG_FULL_( 2, __VA_ARGS__ )
+#define dbg3(...) _DBG_FULL_( 3, __VA_ARGS__ )
+#define dbg4(...) _DBG_FULL_( 4, __VA_ARGS__ )
+#define dbg5(...) _DBG_FULL_( 5, __VA_ARGS__ )
 #define dbgif(when,...) {if ( when ) dbg(__VA_ARGS__)}
-#define dbg1(...) _dbg_full( 1, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbg2(...) _dbg_full( 2, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbg3(...) _dbg_full( 3, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbg4(...) _dbg_full( 4, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
-#define dbg5(...) _dbg_full( 5, dbg_filelevel, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__ )
 #else
-#define dbg(...) _dbg( 0, dbg_filelevel,  __VA_ARGS__ )
-#define dbgif(when,...) {if ( when ) dbg(__VA_ARGS__)}
+#define dbg(...)  _dbg( 0, dbg_filelevel, __VA_ARGS__ )
 #define dbg1(...) _dbg( 1, dbg_filelevel, __VA_ARGS__ )
 #define dbg2(...) _dbg( 2, dbg_filelevel, __VA_ARGS__ )
 #define dbg3(...) _dbg( 3, dbg_filelevel, __VA_ARGS__ )
 #define dbg4(...) _dbg( 4, dbg_filelevel, __VA_ARGS__ )
 #define dbg5(...) _dbg( 5, dbg_filelevel, __VA_ARGS__ )
+#define dbgif(when,...) {if ( when ) dbg(__VA_ARGS__)}
 #endif //FULLDEBUG
 
-#else //DEBUG not defined
+#else //ENABLEDEBUG not defined
 #define dbg(...) {}
 #define dbgif(...) {}
 #define dbg1(...) {}
@@ -281,7 +335,7 @@ extern "C" {
 
 #define dbgi(_int) {}
 
-#endif //DEBUG
+#endif //ENABLEDEBUG
 
 
 
@@ -332,17 +386,7 @@ bool _setdebugtarget( enum _debugtarget t , const char * file)
 
 void _warning( enum _severity sev, const char* file, const int line, const char* function, const char*fmt, ... ){
 		init();
-		fprintf(target, "WARNING: %s   %d, in %s\n   ", file, line, function);
-		va_list ap;
-		va_start(ap,fmt);
-		vfprintf(target, fmt, ap );
-		fprintf(target,"\n");
-		va_end(ap);
-		fflush(target);
-}
-void _error( enum _severity sev, const char* file, const int line, const char* function, const char*fmt, ... ){
-		init();
-		fprintf(target, "ERROR: %s   %d, in %s    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n", file, line, function);
+		fprintf(target, AC_BROWN "WARNING:" AC_NORM " %s  line %d, in %s\n   ", file, line, function);
 		va_list ap;
 		va_start(ap,fmt);
 		vfprintf(target, fmt, ap );
@@ -350,6 +394,24 @@ void _error( enum _severity sev, const char* file, const int line, const char* f
 		va_end(ap);
 		fflush(target);
 		if (sev==FATAL){
+				exit(1);
+		}
+}
+void _error( enum _severity sev, const char* file, const int line, const char* function, const char*fmt, ... ){
+		init();
+		fprintf(target, AC_RED "ERROR:"AC_NORM" %s  line %d, in %s    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n", file, line, function);
+		va_list ap;
+		va_start(ap,fmt);
+		vfprintf(target, fmt, ap );
+		fprintf(target,"\n");
+		va_end(ap);
+		fflush(target);
+		if (sev==FATAL){
+				fprintf(target, AC_LRED "FATAL"AC_NORM"\n");
+				if ( !( target == stderr || target == stdout ) ) // TOFILE
+						fprintf( stderr, AC_LRED "FATAL error in %s line %d\n"AC_NORM"Quit\n", file, line );
+				fflush(target);
+				fflush( STDERR );
 				exit(1);
 		}
 }
@@ -383,6 +445,48 @@ void _dbg( int level, int filelevel, const char*fmt, ... ){
 #endif //DEBUG_INCLUDESRC
 
 #endif //IFNDEF debug_h
+
+#ifdef TEST_DEBUG
+
+// testing, and also serves as example
+
+int main(){
+#ifdef TEST_DEBUG_FILE
+		setdebugtarget( TOFILE, "test.log" );
+#endif
+
+		int a = 3;
+		dbg( "Checking debug functions." );
+		dbg5( "dbg5" );
+		dbg2( "dbg2, a value: %d", 42 );
+
+		dbg(""); // Empty line
+
+		dbg_filelevel = 2;
+		dbg3(" Shouldn't show up" );
+
+		dbg("this is higher than the debuglevel");
+		dbg2("level 2, too");
+
+		dbg5("this not."); // not
+		
+		dbgf2(" A \"full\" debug message by dbgf2");
+
+		dbg(""); // Empty line
+		warnif( a>0, "a gt 0 ");
+		warnif( a>3, "a gt 3 ");
+
+		dbg(""); // Empty line
+		error( "Raising an error" );
+
+		fatal( "Good bye" ); // Quits
+
+		dbg("This shouldn't show up");
+
+		return(0);
+}
+
+#endif //testdebug
 
 #if 0
 endif
