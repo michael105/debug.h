@@ -1,11 +1,24 @@
 #if 0
-# (run make -f debug)
+# /*
+# run make -f debug.h 
 
-manpage: README.rst
-		rst2man README.rst > debug.h.3
+
+check: 
+		gcc -Wall -Wextra -DFULLDEBUG -DDEBUG_INCLUDESRC -std=c9x -fsyntax-only -Werror debug.h 
+
+debug.h.txt: debug.h.3
 
 README.rst: debug.h
 		$(file > README.rst,$(README))
+
+manpage: debug.h.3
+
+debug.h.3: README.rst
+		rst2man README.rst > debug.h.3
+
+html: README.rst
+	pandoc -f rst -t html -s README.rst > debug.html
+
 
 define README =
 
@@ -158,6 +171,7 @@ Michael (misc) Myer misc.myer at zoho.com
 
 endef
 ifdef UNDEF
+*/
 #endif
 
 
@@ -176,22 +190,22 @@ extern "C" {
 #endif
 
 
-		/// where the debug should go
+		// where the debug should go
 		enum _debugtarget { STDERR, STDOUT, TOFILE };
 
 		bool _setdebugtarget( enum _debugtarget t, const char *file );
 
-		/// Set a target for debug (defaults to stderr)
-		/// returns false, if the stream could not be opened
+		// Set a target for debug (defaults to stderr)
+		// returns false, if the stream could not be opened
 #define setdebugtarget(debugtarget,filename) _setdebugtarget( debugtarget, filename )
 
 
 
-		/// Error and warning severity
+		// Error and warning severity
 		enum _severity { DEBUG, MINOR, UNUSUAL, WARNING, SEVERE, FATAL};
 		//enum _severity { FATAL, SEVERE, WARNING, UNUSUAL, MINOR, DEBUG };
 #ifndef DBG_FILELEVEL
-		/// local file debug level (everything by default );
+		// local file debug level (everything by default );
 		static int dbg_filelevel = DEBUG;
 #else 
 		static int dbg_filelevel = DBG_FILELEVEL;
