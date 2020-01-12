@@ -6,6 +6,8 @@
 check: 
 		gcc -Wall -Wextra -DFULLDEBUG -DDEBUG_INCLUDESRC -std=c9x -fsyntax-only -Werror debug.h 
 
+all: debug.h.txt html
+
 debug.h.txt: debug.h.3
 
 README.rst: debug.h
