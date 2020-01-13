@@ -7,6 +7,9 @@
 check: 
 		gcc -Wall -Wextra -DFULLDEBUG -DDEBUG_INCLUDESRC -std=c9x -fsyntax-only -Werror debug.h 
 
+up: check all manpage
+		git push
+
 #(dump save flags)
 flags:  
 		@echo -ne '-DENABLEDEBUG -DDEBUG_INCLUDESRC' 
@@ -40,7 +43,7 @@ define README =
  debug.h
 =========
  
-debugging functions, colored, file logging
+debugging functions, coloured, file logging, single file header only 
 
 
 SYNOPSIS
@@ -171,10 +174,17 @@ and/or once by '#define DEBUG_FILEVEL', before the includement of debug.h
 It's set to 5 per default, meaning, all dbg[1..5] calls will debug output.
 
 
+Generating documentation
+========================
+
+
+make -f debug.h [target]
+
+
 LICENSE
 =======
 
-BSD License
+BSD 3-clause
 
 
 AUTHOR

@@ -31,7 +31,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
 .sp
-debugging functions
+debugging functions, coloured, file logging, single file header only
 .SH SYNOPSIS
 .INDENT 0.0
 .INDENT 3.5
@@ -41,7 +41,7 @@ debugging functions
 .sp
 #define DEBUG_FILELEVEL [0..5]
 .sp
-#define DEBUG_INCLUDESCR
+#define DEBUG_INCLUDESRC
 .sp
 #include "debug.h"
 .UNINDENT
@@ -155,11 +155,14 @@ error and warning macros are not affected by the DEBUG switch.
 .sp
 The debuglevel (\-1..5) can be set differently for every source file,
 either at runtime via dbg_filelevel = level,
-and/or once by \(aq#define DBG_FILEVEL\(aq, before the includement of debug.h
+and/or once by \(aq#define DEBUG_FILEVEL\(aq, before the includement of debug.h
 It\(aqs set to 5 per default, meaning, all dbg[1..5] calls will debug output.
+.SH GENERATING DOCUMENTATION
+.sp
+make \-f debug.h [target]
 .SH LICENSE
 .sp
-BSD License
+BSD 3\-clause
 .SH AUTHOR
 .sp
 Michael (misc) Myer misc.myer at zoho.com

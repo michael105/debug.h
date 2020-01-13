@@ -3,7 +3,7 @@
  debug.h
 =========
  
-debugging functions
+debugging functions, coloured, file logging, single file header only 
 
 
 SYNOPSIS
@@ -15,7 +15,7 @@ SYNOPSIS
 
  #define DEBUG_FILELEVEL [0..5]
 
- #define DEBUG_INCLUDESCR
+ #define DEBUG_INCLUDESRC
  
  #include "debug.h"
 
@@ -130,14 +130,21 @@ error and warning macros are not affected by the DEBUG switch.
 
 The debuglevel (-1..5) can be set differently for every source file, 
 either at runtime via dbg_filelevel = level,
-and/or once by '#define DBG_FILEVEL', before the includement of debug.h
+and/or once by '#define DEBUG_FILEVEL', before the includement of debug.h
 It's set to 5 per default, meaning, all dbg[1..5] calls will debug output.
+
+
+Generating documentation
+========================
+
+
+make -f debug.h [target]
 
 
 LICENSE
 =======
 
-BSD License
+BSD 3-clause
 
 
 AUTHOR
